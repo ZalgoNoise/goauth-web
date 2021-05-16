@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <style>
+
+
+/*
+ * Light mode
+ *
+ * :root {
+ *   --bg: #E0FFFF;
+ *   --cont: #ebebeb;
+ *   --btn: #4682B4;
+ *   --brdr: #87CEEB;
+ *   --form_shadow: 0 10px 20px 3px rgba(70, 130, 180, 0.37);
+ *   --btn_shadow: 0px 10px 10px 3px rgba(70, 130, 180, 0.219);
+ *   --title: black;
+ *   --subtitle: grey;
+ *   --text: black;
+ *   --btn_text: white;
+ * }
+ */
+
+
+/*
+ * Dark mode
+ */
+
+:root {
+  --bg: #404040;
+  --cont: #404040;
+  --btn: #808080;
+  --brdr: #BBBBBB;
+  --form: #656565;
+  --form_shadow: 0 5px 5px 5px rgba(15, 15, 15, 0.37);
+  --btn_shadow: 0px 5px 5px 2px rgba(15, 15, 15, 0.219);
+  --title: white;
+  --subtitle: #CECECE;
+  --text: white;
+  --btn_text: white;
+}
+
+body {
+  background-color: var(--bg);
+}
+
+#title-Tag-Line {
+  font-size: 20px;
+}
+/* .card-item__bg{
+  width: 150px;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  display: block;
+  position: relative;
+  margin: 30px auto;
+  transform: translate(0px, 50px);
+  z-index: 5;
+} */
+
+/* form animation starts */
+.form {
+  background: var(--form);
+  box-shadow: var(--form_shadow);
+  border-radius: 5px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  left: 0;
+  right: 0;
+  position: absolute;
+  border-top: 5px solid var(--brdr);
+}
+::-webkit-input-placeholder {
+  font-size: 1.3em;
+}
+
+.title{
+  display: block;
+  font-family: sans-serif;
+  margin: 10px auto 5px;
+  width: 300px;
+}
+
+.pageTitle{
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--title)
+}
+.secondaryTitle{
+  color: var(--subtitle);
+}
+
+
+.client_id_class,
+.service_account_class {
+  background-color: var(--cont);
+  color: var(--text);  
+}
+.client_id_class:hover,
+.service_account_class:hover {
+  border-bottom: 5px solid var(--brdr);
+  height: 30px;
+  width: 380px;
+  transition: ease 0.5s;
+}
+
+.output {
+  visibility: hidden
+}
+
+.feed {
+  visibility: hidden
+}
+
+
+.message {
+  background-color: var(--cont);
+  overflow: hidden;
+  height: 10rem;
+  color: var(--text);  
+}
+
+
+.message:hover {
+  border-bottom: 5px solid var(--brdr);
+  height: 12em;
+  width: 380px;
+  transition: ease 0.5s;
+}
+
+.formEntry {
+  display: block;
+  margin: 30px auto;
+  min-width: 300px;
+  padding: 10px;
+  border-radius: 2px;
+  border: none;
+  transition: all 0.5s ease 0s;
+}
+
+.submit {
+  width: 200px;
+  color: var(--btn_text);
+  background-color: var(--btn);
+  font-size: 20px;
+}
+
+.submit:hover {
+  box-shadow: var(--btn_shadow);
+  transform: translateY(-3px);
+  width: 300px;
+  border-top: 5px solid var(--brdr);
+  border-radius: 0%;
+}
+
+@keyframes bounce {
+  0% {
+    tranform: translate(0, 4px);
+  }
+  50% {
+    transform: translate(0, 8px);
+  }
+}
+
+.wrapper {
+  /* display: block; */
+  display: flex;
+  justify-content: center;
+  font-family: sans-serif;
+}
+
+label {
+  display: inline-block;
+  width: 140px;
+  text-align: right;
+}
+  </style>
+  <script>
+
+    /*
+     * Client ID vs Service Account picker
+     */
+    function showForm(type) {
+      if (type === "client_id") {
+        document.getElementById("client_id").style.visibility="visible";
+        document.getElementById("wrapper").style.visibility="hidden";
+      } else if (type === "service_account") {
+        document.getElementById("service_account").style.visibility="visible";
+        document.getElementById("wrapper").style.visibility="hidden";
+      } 
+
+    }
+
+    /*
+     * General handler for Client ID requests
+     */
+    function submitClientID() {
+      var clientId = document.getElementById("client_id_value")
+      var clientSecret = document.getElementById("client_id_secret")
+      var clientScopes = document.getElementById("client_id_scopes")
+      var clientRefresh = document.getElementById("client_id_refresh")
+      var accessCode = document.getElementById("client_id_access_code")
+      var msg = document.getElementById("feed")
+      var cid = document.getElementById("client_id_ref")
+      var scp = document.getElementById("client_id_scopes_ref")
+      var at = document.getElementById("access_token_value")
+      var rt = document.getElementById("refresh_token_value")
+      var ex = document.getElementById("expiry_value")
+      var output = {};
+      if (clientId.value && clientSecret.value && clientScopes.value) {
+        if (!clientRefresh.value) {
+          google.script.run.withSuccessHandler(function(output) {
+            msg.innerHTML = output
+            
+            document.getElementById("access_code").style.visibility="visible"
+            document.getElementById("feed").style.visibility="visible"
+            document.getElementById("client_id").style.visibility="hidden"
+          }).clientIdNew(clientId.value, clientSecret.value, clientScopes.value)
+          
+        } else {
+          google.script.run.withSuccessHandler(function(output) {
+            var ctx = JSON.parse(output)
+            
+            cid.value = clientId.value
+            at.value = ctx.accessToken
+            rt.value = ctx.refreshToken
+            ex.value = ctx.expiry
+            scp.value = clientScopes.value
+            
+            document.getElementById("refresh_token").style.visibility="visible"
+            document.getElementById("output").style.visibility="visible"
+            document.getElementById("submit_btn").innerHTML = "Renew"
+            document.getElementById("feed").style.visibility="hidden"
+            document.getElementById("access_code").style.visibility="hidden"
+          }).clientIDGetAccess(clientId.value, clientSecret.value, clientScopes.value, clientRefresh.value)
+        }
+        
+      } /* else {
+        // need to add a red banner or something
+      }
+        */
+    }
+
+    /*
+     * Handler for refresh token creation, with an access code
+     */
+    function submitAccessCode() {
+      var clientId = document.getElementById("client_id_value")
+      var clientSecret = document.getElementById("client_id_secret")
+      var clientScopes = document.getElementById("client_id_scopes")
+      var clientRefresh = document.getElementById("client_id_refresh")
+      var accessCode = document.getElementById("client_id_access_code")
+      var msg = document.getElementById("feed")
+      var cid = document.getElementById("client_id_ref")
+      var scp = document.getElementById("client_id_scopes_ref")
+      var at = document.getElementById("access_token_value")
+      var rt = document.getElementById("refresh_token_value")
+      var ex = document.getElementById("expiry_value")
+      var output = {};
+
+      if (clientId.value && clientSecret.value && clientScopes.value && accessCode.value) {
+             
+        google.script.run.withSuccessHandler(function(output) {
+          var ctx = JSON.parse(output)
+
+          document.getElementById("client_id_refresh").value = ctx.refreshToken
+          
+          cid.value = clientId.value
+          at.value = ctx.accessToken
+          rt.value = ctx.refreshToken
+          ex.value = ctx.expiry
+          scp.value = ctx.scopes
+
+          document.getElementById("refresh_token").style.visibility="visible"
+          document.getElementById("output").style.visibility="visible"
+          document.getElementById("submit_btn").innerHTML = "Renew"
+          document.getElementById("feed").style.visibility="hidden"
+          document.getElementById("access_code").style.visibility="hidden"
+        }).clientIdGetRefresh(clientId.value, clientSecret.value, clientScopes.value, accessCode.value)
+      }
+    }
+
+    /*
+     * General handler for Service Account requests
+     */
+    function submitServiceAccount() {
+      /*
+      * Variables for Service Account requests
+      */
+      var svAccount = document.getElementById("service_account_value")
+      var svAccKey = document.getElementById("service_account_key")
+      var svAccSub = document.getElementById("service_account_subscriber")
+      var svAccScopes = document.getElementById("service_account_scopes")
+
+      var sa = document.getElementById("service_account_ref")
+      var scp = document.getElementById("service_account_scopes_ref")
+      var at = document.getElementById("sa_access_token_value")
+      var sub = document.getElementById("subscriber_value")
+      var ex = document.getElementById("sa_expiry_value")
+
+      if (svAccount.value && svAccKey.value && svAccScopes.value) {
+        if (!svAccSub.value) {
+          var subsc = svAccount.value
+        } else {
+          var subsc = svAccSub.value
+        }
+
+        google.script.run.withSuccessHandler(function(output) {
+          var ctx = JSON.parse(output)
+                    
+          sa.value = svAccount.value
+          scp.value = svAccScopes.value
+          at.value = ctx.accessToken
+          sub.value = subsc
+          ex.value = ctx.expiry
+
+        document.getElementById("service_account_auth").style.visibility="visible"
+        document.getElementById("output").style.visibility="visible"
+        document.getElementById("submit_btn").innerHTML = "Renew"
+        document.getElementById("feed").style.visibility="hidden"
+        document.getElementById("service_account").style.visibility="hidden"
+        }).serviceAccountAuth(svAccount.value, svAccKey.value, svAccScopes.value, subsc)
+      }
+    }
+
+    
+  </script>
+<body>
+  <div class="wrapper" id="wrapper">
+    <div><button class="submit formEntry" onclick="showForm('client_id')">Client ID</button>
+    <button class="submit formEntry" onclick="showForm('service_account')">Service Account</button>
+  </div>
+
+
+    <div class="form" style="visibility:hidden" id="client_id">
+      <div class="pageTitle title">Client ID </div>
+      <div class="secondaryTitle title">Please fill this form to generate an access token.</div>
+      <input type="text" class="client_id_class formEntry" id="client_id_value"  placeholder="Client ID" />
+      <input type="text" class="client_id_class formEntry" id="client_id_secret" placeholder="Client Secret"/>
+      <input type="text" class="client_id_class formEntry" id="client_id_scopes" placeholder="Auth Scopes"/>
+      <input type="text" class="client_id_class formEntry" id="client_id_refresh" placeholder="Refresh Token (optional)"/>
+      <button class="submit formEntry" id="submit_btn" onclick="submitClientID()">Submit</button>
+    </div>
+
+    <div class="form" style="visibility:hidden" id="access_code">
+      <div class="pageTitle title">Client ID </div>
+      <div class="secondaryTitle title">Visit the URL below, and paste the generated access code below.</div>
+      <textarea class="feed message formEntry" id="feed" value="" placeholder="Feed"></textarea>
+      <input type="text" class="client_id_class formEntry" id="client_id_access_code"  placeholder="Access Code" />
+      <button class="submit formEntry" id="submit_btn" onclick="submitAccessCode()">Submit</button>
+    </div>
+
+    <div class="form" style="visibility:hidden" id="refresh_token">
+      <div class="pageTitle title">Client ID </div>
+      <div id="output">
+        <input type="text" class="client_id_class formEntry" id="client_id_ref" placeholder="Client ID"/>        
+        <div class="secondaryTitle title">Access Token </div>
+        <input type="text" class="client_id_class formEntry" id="access_token_value" placeholder="Access Token"/>
+        <div class="secondaryTitle title">Refresh Token </div>
+        <input type="text" class="client_id_class formEntry" id="refresh_token_value" placeholder="Refresh Token"/>
+        <div class="secondaryTitle title">Expires </div>
+        <input type="text" class="client_id_class formEntry" id="expiry_value" placeholder="Expires"/>
+        <div class="secondaryTitle title">Auth Scopes </div>
+        <input type="text" class="client_id_class formEntry" id="client_id_scopes_ref" placeholder="Auth Scopes"/>   
+      </div>
+      <button class="submit formEntry" id="submit_btn" onclick="submitClientID()">Renew</button>
+    </div>
+
+    <div class="form" style="visibility:hidden" id="service_account">
+      <div class="pageTitle title">Service Account </div>
+      <div class="secondaryTitle title">Please fill this form to generate an access token.</div>
+      <input type="text" class="service_account_class formEntry" id="service_account_value"  placeholder="Service Account email" />
+      <input type="text" class="service_account_class formEntry" id="service_account_key" placeholder="Service Account key"/>
+      <input type="text" class="service_account_class formEntry" id="service_account_scopes" placeholder="Auth Scopes"/>
+      <input type="text" class="service_account_class formEntry" id="service_account_subscriber" placeholder="Subscriber (optional)"/>
+      <button class="submit formEntry" id="submit_btn" onclick="submitServiceAccount()">Submit</button>
+      <!--<textarea class="message formEntry" placeholder="Message"></textarea>-->
+    </div>
+
+    <div class="form" style="visibility:hidden" id="service_account_auth">
+      <div class="pageTitle title">Service Account </div>
+      <div id="output">
+        <input type="text" class="service_account_class formEntry" id="service_account_ref" placeholder="Service Account"/>        
+        <div class="secondaryTitle title">Access Token </div>
+        <input type="text" class="service_account_class formEntry" id="sa_access_token_value" placeholder="Access Token"/>
+        <div class="secondaryTitle title">Expires </div>
+        <input type="text" class="service_account_class formEntry" id="sa_expiry_value" placeholder="Expires"/>
+        <div class="secondaryTitle title">Auth Scopes </div>
+        <input type="text" class="service_account_class formEntry" id="service_account_scopes_ref" placeholder="Auth Scopes"/>   
+        <div class="secondaryTitle title">Subscriber </div>
+        <input type="text" class="service_account_class formEntry" id="subscriber_value" placeholder="Subscriber"/>
+      </div>
+      <button class="submit formEntry" id="submit_btn" onclick="submitServiceAccount()">Renew</button>
+    </div>
+
+  </div>
+</body>
+</html>
