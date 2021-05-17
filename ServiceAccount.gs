@@ -28,7 +28,6 @@ class JWT {
 
     this.Gen = function() {
       this.claim = new Claim(this.svAccount)
-      Logger.log(this.svAccount.key)
 
       var toSign = `${this.base64Encode(this.header)}.${this.base64Encode(this.claim)}`
       var key = this.svAccount.key.replace(/\\n/g, '\n');
